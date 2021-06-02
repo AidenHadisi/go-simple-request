@@ -60,6 +60,10 @@ func TestNew(t *testing.T) {
 	t.Run("Method", func(t *testing.T) {
 		assert.Equal(t, request.method, "GET")
 	})
+
+	t.Run("header type", func(t *testing.T) {
+		assert.IsType(t, make(http.Header), request.header)
+	})
 }
 
 func TestNewCopy(t *testing.T) {
@@ -67,20 +71,30 @@ func TestNewCopy(t *testing.T) {
 
 	request.Post("http://example.com")
 	request.SetQuery(&fakeQuery{ID: 20})
+	request.AddHeader("Client-ID", "1234")
 	request2 := request.New()
 
+	expectedHeader := map[string][]string{"Client-Id": {"1234"}}
+
 	t.Run("Not same object", func(t *testing.T) {
-		//Must be a deep copy, not the same object
+		//Must be a deep copy, not a pointer to the same object
 		assert.NotSame(t, request, request2)
 		assert.NotSame(t, request.header, request2.header)
 		assert.NotSame(t, request.Failure, request2.Failure)
 
 	})
 
-	t.Run("Equal", func(t *testing.T) {
+	t.Run("deep equal", func(t *testing.T) {
 		if !reflect.DeepEqual(request, request2) {
 			t.Errorf("Objects are not deep equal expected %+v, got %+v", request, request2)
 		}
+
+		headerMap := map[string][]string(request2.header)
+
+		if !reflect.DeepEqual(expectedHeader, headerMap) {
+			t.Errorf("not equal: expected %v, got %v", expectedHeader, headerMap)
+		}
+
 	})
 }
 
