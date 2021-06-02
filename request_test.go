@@ -1,6 +1,9 @@
 package request
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -192,4 +195,22 @@ func TestFailure(t *testing.T) {
 	assert.Equal(t, result.StatusCode, 400)
 	assert.Nil(t, result.Success)
 	assert.Equal(t, expected, result.Failure.(*fakeSuccess))
+}
+
+func TestSetBody(t *testing.T) {
+	request := New()
+	mockData := &fakeSuccess{ID: 10, Name: "Bob"}
+	request.SetBody(mockData)
+
+	req, err := request.Request()
+	assert.Nil(t, err)
+
+	body, err := json.Marshal(mockData)
+	assert.Nil(t, err)
+
+	buff := bytes.NewBuffer(body)
+	bodyBytes, err := ioutil.ReadAll(req.Body)
+	assert.Nil(t, err)
+
+	assert.Equal(t, buff.Bytes(), bodyBytes)
 }

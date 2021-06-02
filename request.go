@@ -91,6 +91,12 @@ func (r *Request) SetQuery(query interface{}) *Request {
 	return r
 }
 
+//SetBody is used to set request body. Must be passed as a pointer to a struct
+func (r *Request) SetBody(body interface{}) *Request {
+	r.body = body
+	return r
+}
+
 //Get request
 func (r *Request) Get(url string) *Request {
 	r.method = "GET"
